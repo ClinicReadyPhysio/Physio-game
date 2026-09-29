@@ -9,15 +9,16 @@
   var RR = window.RR;
   var app = document.getElementById("app");
 
-  var AREAS = { msk: "MSK", resp: "Respiratory", neuro: "Neuro", ortho: "Ortho & frailty", lead: "Leadership" };
+  var AREAS = { spine: "Spine", upper: "Upper limb", lower: "Lower limb", whole: "Inflammatory & persistent pain", triage: "Triage & caseload" };
   var SKILLS = {
-    flags: "Red flags & safety",
+    flags: "Red flags & serious pathology",
     hypothesis: "Generating hypotheses",
-    assessment: "Choosing assessments",
+    assessment: "Choosing tests",
     interpret: "Interpreting findings",
+    person: "Beliefs, goals & psychosocial",
     manage: "Planning management",
-    priority: "Prioritising & delegating",
-    escalate: "Escalating & communicating"
+    priority: "Triage & delegation",
+    escalate: "Referral & communication"
   };
   var BIASES = {
     premature: ["Premature closure", "Accepting a diagnosis before it explains all the findings."],
@@ -25,7 +26,8 @@
     satisficing: ["Search satisficing", "Stopping the search once one explanation turns up."],
     framing: ["Framing effect", "Letting the way a referral or handover presents the problem steer your reasoning."],
     availability: ["Availability bias", "Judging likelihood by what comes to mind easily, such as the common or recent case."],
-    commission: ["Commission bias", "Feeling you must act, even when stopping is the safer choice."]
+    commission: ["Commission bias", "Feeling you must act, even when stopping is the safer choice."],
+    momentum: ["Diagnostic momentum", "A label gathering certainty as it passes from one clinician to the next."]
   };
   var CONF = {
     low: { label: "Guessing", sub: "×0.8, no penalty", mult: 0.8, miss: 0 },
@@ -33,20 +35,20 @@
     high: { label: "Certain", sub: "×1.25, −4 if wrong", mult: 1.25, miss: -4 }
   };
   var BINS = {
-    now: { label: "Same-day escalation", sub: "ED, 999, on-call or crisis team" },
+    now: { label: "Same-day escalation", sub: "ED, 999, same-day specialist or crisis team" },
     refer: { label: "Refer on", sub: "GP or specialist, not today" },
     manage: { label: "Manage in physio", sub: "With safety-netting" }
   };
   var BIN_KEYS = ["now", "refer", "manage"];
   var LEVELS = [
-    { xp: 0, band: "Tan", title: "First placement", color: "#c9a57a" },
+    { xp: 0, band: "Tan", title: "First MSK placement", color: "#c9a57a" },
     { xp: 100, band: "Yellow", title: "Final-year student", color: "#f2c200" },
     { xp: 250, band: "Red", title: "Band 5 rotational", color: "#d8392f" },
-    { xp: 500, band: "Green", title: "Senior Band 5", color: "#2e9e5b" },
-    { xp: 850, band: "Blue", title: "Band 6", color: "#2f6fd6" },
+    { xp: 500, band: "Green", title: "Band 5 in MSK", color: "#2e9e5b" },
+    { xp: 850, band: "Blue", title: "Band 6 MSK physio", color: "#2f6fd6" },
     { xp: 1300, band: "Black", title: "Senior Band 6", color: "#1b1b1b" },
-    { xp: 1900, band: "Silver", title: "Band 7 specialist", color: "#aab4ba" },
-    { xp: 2700, band: "Gold", title: "Consultant physio", color: "#c9a227" }
+    { xp: 1900, band: "Silver", title: "First contact practitioner", color: "#aab4ba" },
+    { xp: 2700, band: "Gold", title: "Consultant MSK physio", color: "#c9a227" }
   ];
   var FLAG_SECONDS = 60;
   var DAILY_BONUS = 20;
@@ -253,13 +255,13 @@
     var lv = levelOf(P.xp);
     var span = lv.next ? lv.next.xp - lv.cur.xp : 1;
     var fill = lv.next ? Math.max(3, Math.round((100 * (P.xp - lv.cur.xp)) / span)) : 100;
-    var played = Object.keys(P.cases).length;
+    var played = RR.cases.filter(function (c) { return P.cases[c.id]; }).length;
     var streak = liveStreak();
     var dc = dailyCase();
     var dailyDone = P.daily.date === today();
 
     var h = "";
-    h += '<header class="mast"><div class="brand"><span class="eyebrow">Physio clinical reasoning · Band 6</span>' +
+    h += '<header class="mast"><div class="brand"><span class="eyebrow">MSK clinical reasoning · Band 6</span>' +
       '<h1>Reasoning <span class="tape-word">Rounds</span></h1></div>' +
       '<div class="streak"><span class="small muted">Day streak</span><b>' + streak + '</b><span class="small muted">Best</span><b>' + P.streak.best + "</b></div></header>";
 
@@ -277,13 +279,13 @@
 
     h += '<section class="section"><div class="section-head"><h3>Quick play</h3><span class="small muted">Pick one. Each takes a few minutes.</span></div><div class="modes">' +
       '<button class="mode" data-act="nextCase"><span class="eyebrow">Branching cases</span><h3>Case Rounds</h3>' +
-      '<p class="small muted">Work a patient from referral to plan. Commit to an answer and a confidence level at every step.</p>' +
+      '<p class="small muted">Work an MSK patient from referral to plan. Commit to an answer and a confidence level at every step.</p>' +
       '<span class="mode-meta">3–5 MIN · ' + RR.cases.length + " CASES</span></button>" +
       '<button class="mode" data-act="flagIntro"><span class="eyebrow">Timed sort</span><h3>Flag Fast</h3>' +
       '<p class="small muted">60 seconds of vignettes. Escalate today, refer on, or manage in physio?</p>' +
       '<span class="mode-meta">60 SEC · BEST ' + P.flag.best + "</span></button>" +
       '<button class="mode" data-act="nextCl"><span class="eyebrow">Prioritise & delegate</span><h3>Caseload</h3>' +
-      '<p class="small muted">Rank a list of referrals, then allocate each one across your team.</p>' +
+      '<p class="small muted">Triage a referral pile or a clinic morning, then allocate each item across your team.</p>' +
       '<span class="mode-meta">3 MIN · ' + RR.caseload.length + " SCENARIOS</span></button></div></section>";
 
     h += viewLibrary();
@@ -306,7 +308,9 @@
       '</div><div class="caselist">';
 
     var rows = "";
-    RR.cases.forEach(function (c) {
+    var areaOrder = Object.keys(AREAS);
+    var byRegion = RR.cases.slice().sort(function (a, b) { return areaOrder.indexOf(a.area) - areaOrder.indexOf(b.area); });
+    byRegion.forEach(function (c) {
       if (f !== "all" && c.area !== f) return;
       var rec = P.cases[c.id];
       rows += '<button class="caserow" data-act="case" data-id="' + c.id + '"><span class="t">' + esc(c.title) + "</span>" +
@@ -738,7 +742,7 @@
     var m = r.summary;
     h += '<section class="panel"><div class="eyebrow">Caseload reviewed</div><div class="result-hero"><div class="bignum">' + m.pct + "<small>% match</small></div>" +
       '<span class="xp-pill">+' + m.xp + " XP</span></div>" + levelUpNote(m.levelUp) +
-      (m.criticalMissed ? '<div class="alert"><b>Safety check:</b> your first patient wasn\'t the most unwell one. The sickest, most unstable patient comes first.</div>' : "") + "</section>";
+      (m.criticalMissed ? '<div class="alert"><b>Safety check:</b> you didn\'t put the most urgent item first. Anything that could cause harm today comes before everything else.</div>' : "") + "</section>";
     h += '<div class="pts">' + m.rows.slice().sort(function (a, b) { return a.rk - b.rk; }).map(function (x) {
       var p = x.p;
       var cls = function (v) { return v === 10 ? "ok-good" : v === 5 ? "ok-part" : "ok-bad"; };

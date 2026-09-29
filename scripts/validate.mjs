@@ -14,9 +14,9 @@ for (const f of readdirSync(dir).filter((f) => f.endsWith(".js")).sort()) {
 }
 const RR = ctx.RR;
 
-const AREAS = ["msk", "resp", "neuro", "ortho", "lead"];
-const SKILLS = ["flags", "hypothesis", "assessment", "interpret", "manage", "priority", "escalate"];
-const BIASES = ["premature", "anchoring", "satisficing", "framing", "availability", "commission"];
+const CASE_AREAS = ["spine", "upper", "lower", "whole"];
+const SKILLS = ["flags", "hypothesis", "assessment", "interpret", "person", "manage", "priority", "escalate"];
+const BIASES = ["premature", "anchoring", "satisficing", "framing", "availability", "commission", "momentum"];
 const errors = [];
 const fail = (where, msg) => errors.push(`${where}: ${msg}`);
 const text = (v) => typeof v === "string" && v.trim().length > 0;
@@ -32,7 +32,7 @@ for (const c of RR.cases) {
   const w = `case ${c.id}`;
   uniqueId(c.id, w);
   for (const k of ["title", "setting", "patient", "intro", "pearl"]) if (!text(c[k])) fail(w, `missing ${k}`);
-  if (!AREAS.includes(c.area)) fail(w, `unknown area ${c.area}`);
+  if (!CASE_AREAS.includes(c.area)) fail(w, `unknown area ${c.area}`);
   if (!(c.mins > 0)) fail(w, "mins must be positive");
   if (!Array.isArray(c.refs) || !c.refs.length) fail(w, "needs at least one reference");
   if (!Array.isArray(c.stages) || c.stages.length < 3) fail(w, "needs at least 3 stages");
@@ -73,7 +73,7 @@ for (const b of BINS) if (RR.flags.filter((f) => f.a === b).length < 5) fail("fl
 for (const sc of RR.caseload) {
   const w = `caseload ${sc.id}`;
   uniqueId(sc.id, w);
-  if (!AREAS.includes(sc.area)) fail(w, `unknown area ${sc.area}`);
+  if (sc.area !== "triage") fail(w, "caseload area must be triage");
   const roles = (sc.roles || []).map((r) => r.k);
   if (roles.length < 2) fail(w, "needs 2+ roles");
   const pids = new Set();

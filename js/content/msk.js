@@ -1,6 +1,6 @@
-/* MSK outpatient cases.
+/* MSK cases: serious pathology and acute injury.
  * Case schema (shared by every content file):
- *   id, title, area, setting, mins, patient, intro,
+ *   id, title, area (spine | upper | lower | whole), setting, mins, patient, intro,
  *   stages: [{ skill, notes?, obs?, q, multi?, options, why }],
  *   pearl, refs
  * Single-answer options: { t, s (0-10), fb, bias? }
@@ -12,7 +12,7 @@ RR.cases.push(
   {
     id: "msk-ces",
     title: "The wiping question",
-    area: "msk",
+    area: "spine",
     setting: "MSK outpatients",
     mins: 4,
     patient: "Dean, 44, warehouse operative",
@@ -78,7 +78,7 @@ RR.cases.push(
   {
     id: "msk-frozen",
     title: "Stuck in the night",
-    area: "msk",
+    area: "upper",
     setting: "MSK outpatients",
     mins: 4,
     patient: "Priya, 52, primary school teacher",
@@ -143,7 +143,7 @@ RR.cases.push(
   {
     id: "msk-knee",
     title: "The pop",
-    area: "msk",
+    area: "lower",
     setting: "MSK outpatients",
     mins: 5,
     patient: "Kai, 23, 5-a-side footballer",
@@ -206,7 +206,7 @@ RR.cases.push(
   {
     id: "msk-achilles",
     title: "But he can walk",
-    area: "msk",
+    area: "lower",
     setting: "MSK / urgent care",
     mins: 4,
     patient: "Mark, 47, badminton player",
@@ -268,7 +268,7 @@ RR.cases.push(
   {
     id: "msk-dcm",
     title: "Butterfingers",
-    area: "msk",
+    area: "spine",
     setting: "MSK outpatients",
     mins: 4,
     patient: "Joan, 68, retired librarian",
@@ -321,7 +321,7 @@ RR.cases.push(
   {
     id: "msk-mscc",
     title: "Nothing touches it",
-    area: "msk",
+    area: "spine",
     setting: "MSK outpatients",
     mins: 4,
     patient: "Brian, 71, retired bus driver",
