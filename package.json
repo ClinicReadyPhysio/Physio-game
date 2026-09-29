@@ -1,0 +1,10 @@
+{
+  "name": "reasoning-rounds",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Quick-fire clinical reasoning practice for Band 6 physiotherapists.",
+  "scripts": {
+    "test": "node scripts/validate.mjs",
+    "build": "node scripts/validate.mjs && node scripts/build.mjs"
+  }
+}
